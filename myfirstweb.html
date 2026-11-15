@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ledger & Leaf — Cashflow & Subscription Radar</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Editorial Serif, Clean Sans & Monospace Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Fraunces"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          },
+          colors: {
+            paperBg: '#FBF9F5',
+            paperCard: '#FFFFFF',
+            paperTint: '#F4F0E8',
+            stoneBorder: '#E5E0D8',
+            forestInk: '#1B4332',
+            forestHover: '#133124',
+            sageLeaf: '#52796F',
+            clayAlert: '#BC4749',
+            ochreWarn: '#D97706',
+            charcoalText: '#1F2421',
+            mutedInk: '#646B66',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Tactile Editorial Paper Styling */
+    body {
+      background-color: #FBF9F5;
+      color: #1F2421;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .editorial-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E5E0D8;
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px rgba(27, 67, 50, 0.04);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+
+    .editorial-card:hover {
+      border-color: #CFC8BC;
+      box-shadow: 0 4px 14px rgba(27, 67, 50, 0.06);
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Smooth width animation for SVG/CSS budget and category bars */
+    .bar-fill {
+      transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FBF9F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6CFC3;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B8B0A2;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-10 selection:bg-[#1B4332] selection:text-[#FBF9F5]">
+
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- =====================================================================
+         TOP EDITORIAL HEADER
+         ===================================================================== -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-[#E5E0D8]">
+      <div class="flex items-start gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-[#1B4332] text-[#FBF9F5] flex items-center justify-center shrink-0 shadow-sm">
+          <!-- Botanical Leaf & Ledger SVG Mark -->
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1B4332]">
+              Ledger &amp; Leaf
+            </h1>
+            <span class="text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#F4F0E8] text-[#52796F] border border-[#E5E0D8]">
+              Cashflow Radar
+            </span>
+          </div>
+          <p id="headerDateSubtitle" class="text-xs sm:text-sm text-[#646B66] mt-1">
+            Recurring commitment telemetry &amp; renewal intelligence
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button
+          id="openNewSubFocusBtn"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#1B4332] hover:bg-[#133124] text-[#FBF9F5] transition shadow-sm"
+        >
+          + Log Subscription
+        </button>
+        <button
+          id="resetSampleBtn"
+          class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#F4F0E8] hover:bg-[#EAE3D5] text-[#1F2421] border border-[#E5E0D8] transition"
+        >
+          Reset Sample Data
+        </button>
+      </div>
+    </header>
+
+    <!-- =====================================================================
+         1. SUMMARY KPI ROW
+         ===================================================================== -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <!-- KPI 1: Monthly Burn Rate -->
+      <article class="editorial-card p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#646B66]">Monthly Burn Rate</span>
+          <span class="w-2 h-2 rounded-full bg-[#1B4332]"></span>
+        </div>
+        <div class="my-3">
+          <p id="kpiMonthlyBurn" class="font-mono text-3xl font-semibold text-[#1B4332] tabular-nums">$0.00</p>
+          <p class="text-xs text-[#646B66] mt-1">Normalized active monthly outflow</p>
+        </div>
+      </article>
+
+      <!-- KPI 2: Annualized Projection -->
+      <article class="editorial-card p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#646B66]">Annualized Projection</span>
+          <span class="text-[11px] font-mono text-[#52796F] bg-[#F4F0E8] px-2 py-0.5 rounded-md border border-[#E5E0D8]">12 MO</span>
+        </div>
+        <div class="my-3">
+          <p id="kpiAnnualBurn" class="font-mono text-3xl font-semibold text-[#1F2421] tabular-nums">$0.00</p>
+          <p class="text-xs text-[#646B66] mt-1">Projected 12-month commitment</p>
+        </div>
+      </article>
+
+      <!-- KPI 3: Active vs Paused Count -->
+      <article class="editorial-card p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#646B66]">Subscription Status</span>
+          <span id="kpiUrgentBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#F4F0E8] text-[#646B66] border border-[#E5E0D8]">
+            0 due soon
+          </span>
+        </div>
+        <div class="my-3 flex items-baseline gap-4">
+          <div>
+            <span id="kpiActiveCount" class="font-mono text-3xl font-semibold text-[#1B4332] tabular-nums">0</span>
+            <span class="text-xs font-medium text-[#52796F] ml-1">Active</span>
+          </div>
+          <span class="text-[#E5E0D8]">/</span>
+          <div>
+            <span id="kpiPausedCount" class="font-mono text-2xl font-medium text-[#646B66] tabular-nums">0</span>
+            <span class="text-xs text-[#646B66] ml-1">Paused</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- KPI 4: Live Budget Utilization Bar -->
+      <article class="editorial-card p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between gap-2">
+          <label for="monthlyBudgetInput" class="text-xs font-semibold uppercase tracking-wider text-[#646B66]">
+            Monthly Cap ($)
+          </label>
+          <input
+            type="number"
+            id="monthlyBudgetInput"
+            min="10"
+            max="50000"
+            step="10"
+            value="200"
+            class="w-24 text-right font-mono text-xs font-semibold px-2 py-1 rounded-lg bg-[#F4F0E8] border border-[#E5E0D8] text-[#1F2421] focus:outline-none focus:border-[#1B4332]"
+          />
+        </div>
+
+        <div class="mt-3">
+          <div class="flex items-baseline justify-between text-xs mb-1.5">
+            <span id="budgetStatusLabel" class="font-medium text-[#1B4332]">Within target</span>
+            <span id="budgetPercentLabel" class="font-mono font-semibold text-[#1F2421] tabular-nums">0%</span>
+          </div>
+          <!-- Progress Bar -->
+          <div class="w-full h-2.5 rounded-full bg-[#F4F0E8] border border-[#E5E0D8] overflow-hidden">
+            <div id="budgetProgressBar" class="bar-fill h-full rounded-full bg-[#1B4332]" style="width: 0%"></div>
+          </div>
+          <p id="budgetRemainingText" class="text-[11px] font-mono text-[#646B66] mt-1.5 tabular-nums">
+            $200.00 remaining
+          </p>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- =====================================================================
+         2. INTERACTIVE CATEGORY SPEND BREAKDOWN (Pure CSS/SVG Proportional Bar)
+         ===================================================================== -->
+    <section class="editorial-card p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h2 class="font-serif text-lg font-bold text-[#1B4332]">Category Spend Allocation</h2>
+          <p class="text-xs text-[#646B66]">Proportional monthly spend across active commitments (click a category to filter)</p>
+        </div>
+        <button
+          id="clearCategoryFilterBtn"
+          class="hidden text-xs font-mono text-[#BC4749] hover:underline self-start sm:self-auto"
+        >
+          × Clear category filter
+        </button>
+      </div>
+
+      <!-- Stacked Horizontal Proportional Bar -->
+      <div id="categoryStackedBar" class="w-full h-4 rounded-full bg-[#F4F0E8] border border-[#E5E0D8] overflow-hidden flex gap-0.5 p-0.5">
+        <!-- Segments injected dynamically via JS -->
+      </div>
+
+      <!-- Category Legend & Interactive Filter Cards -->
+      <div id="categoryBreakdownLegend" class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <!-- Category pills injected dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         MAIN WORKSPACE SPLIT: ADD/EDIT FORM (4 cols) + SUBSCRIPTION LEDGER (8 cols)
+         ===================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- 3. ADD / EDIT SUBSCRIPTION FORM (4 columns) -->
+      <aside class="editorial-card p-6 lg:col-span-4 lg:sticky lg:top-6">
+        <div class="flex items-center justify-between pb-3 border-b border-[#E5E0D8]">
+          <div>
+            <span id="formModeBadge" class="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-[#F4F0E8] text-[#52796F] border border-[#E5E0D8]">
+              New Entry
+            </span>
+            <h2 id="formHeading" class="font-serif text-xl font-bold text-[#1B4332] mt-1">
+              Add Subscription
+            </h2>
+          </div>
+          <button
+            type="button"
+            id="cancelEditBtn"
+            class="hidden text-xs font-medium text-[#BC4749] hover:underline"
+          >
+            Cancel Edit
+          </button>
+        </div>
+
+        <form id="subscriptionForm" class="mt-4 space-y-4">
+          <!-- Hidden ID field used when editing an existing subscription -->
+          <input type="hidden" id="subIdInput" value="" />
+
+          <div>
+            <label for="subNameInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+              Service / Vendor Name
+            </label>
+            <input
+              type="text"
+              id="subNameInput"
+              placeholder="e.g., Figma Professional"
+              maxlength="40"
+              required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] text-sm text-[#1F2421] placeholder-[#9CA39E] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="subCostInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+                Cost (USD)
+              </label>
+              <input
+                type="number"
+                id="subCostInput"
+                placeholder="15.00"
+                min="0.01"
+                max="10000"
+                step="0.01"
+                required
+                class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] font-mono text-sm text-[#1F2421] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+              />
+            </div>
+
+            <div>
+              <label for="subCycleInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+                Billing Cycle
+              </label>
+              <select
+                id="subCycleInput"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] text-sm text-[#1F2421] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+              >
+                <option value="Monthly">Monthly</option>
+                <option value="Yearly">Yearly</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="subCategoryInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+                Category
+              </label>
+              <select
+                id="subCategoryInput"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] text-sm text-[#1F2421] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+              >
+                <option value="Software">Software</option>
+                <option value="Media">Media</option>
+                <option value="Cloud">Cloud</option>
+                <option value="Wellness">Wellness</option>
+                <option value="Utilities">Utilities</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="subStatusInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+                Status
+              </label>
+              <select
+                id="subStatusInput"
+                class="w-full px-3 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] text-sm text-[#1F2421] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+              >
+                <option value="Active">Active</option>
+                <option value="Paused">Paused</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="subRenewalDateInput" class="block text-xs font-semibold text-[#1F2421] mb-1">
+              Next Renewal Date
+            </label>
+            <input
+              type="date"
+              id="subRenewalDateInput"
+              required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] font-mono text-sm text-[#1F2421] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+            />
+          </div>
+
+          <button
+            type="submit"
+            id="formSubmitBtn"
+            class="w-full py-3 px-4 rounded-xl bg-[#1B4332] hover:bg-[#133124] text-[#FBF9F5] font-semibold text-sm transition shadow-sm"
+          >
+            Save to Ledger
+          </button>
+        </form>
+      </aside>
+
+      <!-- 4 & 5. FILTER CONTROLS & SUBSCRIPTION LEDGER CARDS (8 columns) -->
+      <main class="lg:col-span-8 space-y-4">
+
+        <!-- Filter, Search & Sort Control Bar -->
+        <div class="editorial-card p-4 space-y-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <!-- Status Filter Tabs -->
+            <div id="statusFilterGroup" class="flex flex-wrap items-center gap-1.5">
+              <button data-filter="All" class="status-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1B4332] text-[#FBF9F5] transition">
+                All
+              </button>
+              <button data-filter="Active" class="status-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F4F0E8] text-[#1F2421] hover:bg-[#EAE3D5] transition">
+                Active
+              </button>
+              <button data-filter="Paused" class="status-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F4F0E8] text-[#1F2421] hover:bg-[#EAE3D5] transition">
+                Paused
+              </button>
+              <button data-filter="RenewingSoon" class="status-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F4F0E8] text-[#BC4749] hover:bg-[#EAE3D5] transition">
+                Renewing Soon (&le;5d)
+              </button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="flex items-center gap-2">
+              <label for="sortSelect" class="text-xs text-[#646B66] shrink-0">Sort by:</label>
+              <select
+                id="sortSelect"
+                class="px-3 py-1.5 rounded-lg bg-[#FBF9F5] border border-[#E5E0D8] text-xs font-medium text-[#1F2421] focus:outline-none focus:border-[#1B4332]"
+              >
+                <option value="renewalAsc">Next Renewal (Soonest)</option>
+                <option value="costDesc">Monthly Cost (High &rarr; Low)</option>
+                <option value="costAsc">Monthly Cost (Low &rarr; High)</option>
+                <option value="nameAsc">Name (A &rarr; Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="relative">
+            <svg class="w-4 h-4 text-[#646B66] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path stroke-linecap="round" d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search subscriptions by name or category..."
+              class="w-full pl-10 pr-4 py-2 rounded-xl bg-[#FBF9F5] border border-[#E5E0D8] text-sm text-[#1F2421] placeholder-[#9CA39E] focus:outline-none focus:border-[#1B4332] focus:bg-white transition"
+            />
+          </div>
+        </div>
+
+        <!-- Subscription Ledger List -->
+        <div id="subscriptionLedgerList" class="space-y-3">
+          <!-- Cards rendered dynamically via JS -->
+        </div>
+
+        <!-- Empty State (Shown when filters/search match zero items) -->
+        <div id="ledgerEmptyState" class="hidden editorial-card p-12 text-center">
+          <div class="w-12 h-12 rounded-2xl bg-[#F4F0E8] border border-[#E5E0D8] text-[#52796F] flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="font-serif text-lg font-bold text-[#1B4332]">No matching entries found</h3>
+          <p class="text-xs text-[#646B66] mt-1 max-w-sm mx-auto">
+            Try clearing your search query, switching filter tabs, or logging a new recurring subscription.
+          </p>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Non-blocking Toast Banner -->
+  <div
+    id="toastBanner"
+    class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 px-4 py-3 rounded-xl bg-[#1B4332] text-[#FBF9F5] text-xs font-medium shadow-xl flex items-center gap-2.5 border border-[#52796F]"
+  >
+    <span class="w-2 h-2 rounded-full bg-[#A3B18A]"></span>
+    <span id="toastText">Saved</span>
+  </div>
+
+  <!-- =========================================================================
+       VANILLA JAVASCRIPT ARCHITECTURE
+       Organized into:
+       1. ARRAYS & OBJECTS
+       2. PURE & HELPER FUNCTIONS
+       3. LOOPS & DATA AGGREGATION
+       4. CONDITIONALS & UI RENDERING
+       5. EVENT HANDLERS & INITIALIZATION
+       ========================================================================= -->
+  <script>
+    'use strict';
+
+    /* =========================================================================
+       1. ARRAYS & OBJECTS: Configuration, Category Palette & State
+       ========================================================================= */
+
+    // Configuration Object for Budget & Threshold Rules
+    const BUDGET_CONFIG = {
+      defaultMonthlyLimit: 200,
+      urgentRenewalDays: 5,
+      highCostThreshold: 30, // Monthly equivalent >= $30 triggers high-cost badge
+      storageKeySubs: 'ledger_leaf_subscriptions_v1',
+      storageKeyBudget: 'ledger_leaf_budget_v1'
+    };
+
+    // Category Metadata Object mapping each category to its Editorial Ink color
+    const CATEGORY_META = {
+      Software:  { color: '#1B4332', bgTint: 'rgba(27, 67, 50, 0.08)' },
+      Media:     { color: '#52796F', bgTint: 'rgba(82, 121, 111, 0.10)' },
+      Cloud:     { color: '#3A5A40', bgTint: 'rgba(58, 90, 64, 0.10)' },
+      Wellness:  { color: '#D97706', bgTint: 'rgba(217, 119, 6, 0.10)' },
+      Utilities: { color: '#BC4749', bgTint: 'rgba(188, 71, 73, 0.10)' }
+    };
+
+    // Helper to build relative ISO dates (YYYY-MM-DD) so sample renewals are always realistic
+    function getRelativeDateISO(daysOffset) {
+      const date = new Date();
+      date.setDate(date.getDate() + daysOffset);
+      return date.toISOString().split('T')[0];
+    }
+
+    // Default Array of Subscription Objects
+    function createDefaultSubscriptions() {
+      return [
+        {
+          id: 'sub-1',
+          name: 'Linear Workspace',
+          cost: 16.00,
+          billingCycle: 'Monthly',
+          category: 'Software',
+          renewalDate: getRelativeDateISO(2), // Due in 2 days (Urgent)
+          status: 'Active'
+        },
+        {
+          id: 'sub-2',
+          name: 'Adobe Creative Cloud',
+          cost: 59.99,
+          billingCycle: 'Monthly',
+          category: 'Software',
+          renewalDate: getRelativeDateISO(12),
+          status: 'Active'
+        },
+        {
+          id: 'sub-3',
+          name: 'Criterion Channel',
+          cost: 109.99,
+          billingCycle: 'Yearly',
+          category: 'Media',
+          renewalDate: getRelativeDateISO(4), // Due in 4 days (Urgent)
+          status: 'Active'
+        },
+        {
+          id: 'sub-4',
+          name: 'iCloud+ 2TB Storage',
+          cost: 9.99,
+          billingCycle: 'Monthly',
+          category: 'Cloud',
+          renewalDate: getRelativeDateISO(19),
+          status: 'Active'
+        },
+        {
+          id: 'sub-5',
+          name: 'Equinox Digital Studio',
+          cost: 39.99,
+          billingCycle: 'Monthly',
+          category: 'Wellness',
+          renewalDate: getRelativeDateISO(9),
+          status: 'Active'
+        },
+        {
+          id: 'sub-6',
+          name: 'Fiber Gigabit Internet',
+          cost: 65.00,
+          billingCycle: 'Monthly',
+          category: 'Utilities',
+          renewalDate: getRelativeDateISO(24),
+          status: 'Paused'
+        }
+      ];
+    }
+
+    // Primary Application State Object containing the subscriptions array & active filters
+    const appState = {
+      subscriptions: [],
+      monthlyBudget: BUDGET_CONFIG.defaultMonthlyLimit,
+      statusFilter: 'All',      // 'All' | 'Active' | 'Paused' | 'RenewingSoon'
+      categoryFilter: 'All',    // 'All' | 'Software' | 'Media' | 'Cloud' | 'Wellness' | 'Utilities'
+      searchQuery: '',
+      sortBy: 'renewalAsc'
+    };
+
+    /* =========================================================================
+       2. PURE & HELPER FUNCTIONS
+       ========================================================================= */
+
+    /**
+     * Normalizes any billing cycle (Monthly or Yearly) into its monthly cost equivalent.
+     * Uses a ternary conditional for clean conversion.
+     * @param {Object} sub - Subscription object
+     * @returns {number} Monthly cost
+     */
+    function calculateMonthlyEquivalent(sub) {
+      return sub.billingCycle === 'Yearly' ? sub.cost / 12 : sub.cost;
+    }
+
+    /**
+     * Calculates integer days from today until the subscription's next renewal date.
+     * @param {string} isoDateString - YYYY-MM-DD
+     * @returns {number} Days remaining (0 = today, negative = past due)
+     */
+    function getDaysUntilRenewal(isoDateString) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [year, month, day] = isoDateString.split('-').map(Number);
+      const target = new Date(year, month - 1, day);
+      target.setHours(0, 0, 0, 0);
+
+      const diffMs = target - today;
+      return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+    /**
+     * Formats a number as USD currency ($0.00).
+     * @param {number} amount
+     * @returns {string}
+     */
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+      }).format(amount);
+    }
+
+    /**
+     * Safely escapes HTML to prevent XSS from user-entered subscription names.
+     * @param {string} str
+     * @returns {string}
+     */
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    /**
+     * Saves subscriptions array and budget limit to localStorage.
+     */
+    function saveState() {
+      try {
+        localStorage.setItem(BUDGET_CONFIG.storageKeySubs, JSON.stringify(appState.subscriptions));
+        localStorage.setItem(BUDGET_CONFIG.storageKeyBudget, String(appState.monthlyBudget));
+      } catch (err) {
+        console.error('Failed to persist state:', err);
+      }
+    }
+
+    /**
+     * Loads persisted data from localStorage or falls back to realistic sample data.
+     */
+    function loadState() {
+      try {
+        const rawSubs = localStorage.getItem(BUDGET_CONFIG.storageKeySubs);
+        const rawBudget = localStorage.getItem(BUDGET_CONFIG.storageKeyBudget);
+
+        // Conditional check for existing stored subscriptions
+        if (rawSubs) {
+          appState.subscriptions = JSON.parse(rawSubs);
+        } else {
+          appState.subscriptions = createDefaultSubscriptions();
+        }
+
+        if (rawBudget && !Number.isNaN(Number(rawBudget))) {
+          appState.monthlyBudget = Math.max(10, Number(rawBudget));
+        }
+      } catch (err) {
+        console.error('Failed to read storage, loading defaults:', err);
+        appState.subscriptions = createDefaultSubscriptions();
+      }
+    }
+
+    /**
+     * Displays a subtle non-blocking toast notification.
+     * @param {string} message
+     */
+    function showToast(message) {
+      const banner = document.getElementById('toastBanner');
+      const textEl = document.getElementById('toastText');
+      textEl.textContent = message;
+
+      banner.classList.remove('translate-y-20', 'opacity-0');
+      banner.classList.add('translate-y-0', 'opacity-100');
+
+      clearTimeout(banner._timer);
+      banner._timer = setTimeout(() => {
+        banner.classList.remove('translate-y-0', 'opacity-100');
+        banner.classList.add('translate-y-20', 'opacity-0');
+      }, 2600);
+    }
+
+    /* =========================================================================
+       3. LOOPS & DATA AGGREGATION (reduce, filter, forEach)
+       ========================================================================= */
+
+    /**
+     * Aggregates KPI metrics and category spend totals using array loops.
+     * @returns {Object} Calculated telemetry
+     */
+    function computeTelemetry() {
+      // Loop via reduce() to compute burn rate, counts, urgent renewals, and category totals
+      const initialAccumulator = {
+        monthlyBurn: 0,
+        activeCount: 0,
+        pausedCount: 0,
+        urgentCount: 0,
+        categoryTotals: {
+          Software: 0,
+          Media: 0,
+          Cloud: 0,
+          Wellness: 0,
+          Utilities: 0
+        }
+      };
+
+      const stats = appState.subscriptions.reduce((acc, sub) => {
+        const monthlyCost = calculateMonthlyEquivalent(sub);
+        const daysLeft = getDaysUntilRenewal(sub.renewalDate);
+
+        // Conditional check for Active vs Paused status
+        if (sub.status === 'Active') {
+          acc.activeCount += 1;
+          acc.monthlyBurn += monthlyCost;
+
+          // Accumulate spend into the matching category key
+          if (Object.prototype.hasOwnProperty.call(acc.categoryTotals, sub.category)) {
+            acc.categoryTotals[sub.category] += monthlyCost;
+          }
+
+          // Count active subscriptions renewing within threshold
+          if (daysLeft >= 0 && daysLeft <= BUDGET_CONFIG.urgentRenewalDays) {
+            acc.urgentCount += 1;
+          }
+        } else {
+          acc.pausedCount += 1;
+        }
+
+        return acc;
+      }, initialAccumulator);
+
+      stats.annualBurn = stats.monthlyBurn * 12;
+      return stats;
+    }
+
+    /**
+     * Filters and sorts the subscriptions array according to current UI controls.
+     * @returns {Array<Object>} Filtered and sorted subscription list
+     */
+    function getFilteredAndSortedSubscriptions() {
+      const query = appState.searchQuery.trim().toLowerCase();
+
+      // 1. Filter loop using Array.prototype.filter & conditionals
+      const filtered = appState.subscriptions.filter((sub) => {
+        const daysLeft = getDaysUntilRenewal(sub.renewalDate);
+
+        // Status tab conditional
+        if (appState.statusFilter === 'Active' && sub.status !== 'Active') return false;
+        if (appState.statusFilter === 'Paused' && sub.status !== 'Paused') return false;
+        if (
+          appState.statusFilter === 'RenewingSoon' &&
+          !(sub.status === 'Active' && daysLeft >= 0 && daysLeft <= BUDGET_CONFIG.urgentRenewalDays)
+        ) {
+          return false;
+        }
+
+        // Category pill conditional
+        if (appState.categoryFilter !== 'All' && sub.category !== appState.categoryFilter) {
+          return false;
+        }
+
+        // Search text conditional
+        if (query !== '') {
+          const matchesName = sub.name.toLowerCase().includes(query);
+          const matchesCat = sub.category.toLowerCase().includes(query);
+          if (!matchesName && !matchesCat) return false;
+        }
+
+        return true;
+      });
+
+      // 2. Sort shallow copy using Array.prototype.sort
+      return filtered.slice().sort((a, b) => {
+        if (appState.sortBy === 'costDesc') {
+          return calculateMonthlyEquivalent(b) - calculateMonthlyEquivalent(a);
+        }
+        if (appState.sortBy === 'costAsc') {
+          return calculateMonthlyEquivalent(a) - calculateMonthlyEquivalent(b);
+        }
+        if (appState.sortBy === 'nameAsc') {
+          return a.name.localeCompare(b.name);
+        }
+        // Default: renewalAsc (soonest renewal first)
+        return getDaysUntilRenewal(a.renewalDate) - getDaysUntilRenewal(b.renewalDate);
+      });
+    }
+
+    /* =========================================================================
+       4. CONDITIONALS & UI RENDERING FUNCTIONS
+       ========================================================================= */
+
+    /**
+     * Renders the 4 KPI cards and updates the live Budget Utilization progress bar.
+     * @param {Object} stats
+     */
+    function renderKPISection(stats) {
+      document.getElementById('kpiMonthlyBurn').textContent = formatCurrency(stats.monthlyBurn);
+      document.getElementById('kpiAnnualBurn').textContent = formatCurrency(stats.annualBurn);
+      document.getElementById('kpiActiveCount').textContent = stats.activeCount;
+      document.getElementById('kpiPausedCount').textContent = stats.pausedCount;
+
+      // Urgent renewal pill conditional styling
+      const urgentBadge = document.getElementById('kpiUrgentBadge');
+      urgentBadge.textContent = `${stats.urgentCount} due soon`;
+      if (stats.urgentCount > 0) {
+        urgentBadge.className = 'text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-[#BC4749]/10 text-[#BC4749] border border-[#BC4749]/30';
+      } else {
+        urgentBadge.className = 'text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#F4F0E8] text-[#646B66] border border-[#E5E0D8]';
+      }
+
+      // Budget utilization calculation & conditional threshold alerts
+      const budget = appState.monthlyBudget;
+      const rawPercent = budget > 0 ? (stats.monthlyBurn / budget) * 100 : 0;
+      const clampedWidth = Math.min(100, Math.max(0, rawPercent));
+      const diff = budget - stats.monthlyBurn;
+
+      const progressBar = document.getElementById('budgetProgressBar');
+      const statusLabel = document.getElementById('budgetStatusLabel');
+      const percentLabel = document.getElementById('budgetPercentLabel');
+      const remainingText = document.getElementById('budgetRemainingText');
+
+      progressBar.style.width = `${clampedWidth.toFixed(1)}%`;
+      percentLabel.textContent = `${Math.round(rawPercent)}%`;
+
+      // Conditional color shift: Forest Green (<80%), Ochre (80-100%), Clay Alert (>100%)
+      if (rawPercent > 100) {
+        progressBar.style.backgroundColor = '#BC4749';
+        statusLabel.textContent = 'Over monthly cap';
+        statusLabel.className = 'font-semibold text-[#BC4749]';
+        remainingText.textContent = `${formatCurrency(Math.abs(diff))} over limit`;
+        remainingText.className = 'text-[11px] font-mono font-medium text-[#BC4749] mt-1.5 tabular-nums';
+      } else if (rawPercent >= 80) {
+        progressBar.style.backgroundColor = '#D97706';
+        statusLabel.textContent = 'Approaching cap';
+        statusLabel.className = 'font-semibold text-[#D97706]';
+        remainingText.textContent = `${formatCurrency(diff)} remaining`;
+        remainingText.className = 'text-[11px] font-mono text-[#646B66] mt-1.5 tabular-nums';
+      } else {
+        progressBar.style.backgroundColor = '#1B4332';
+        statusLabel.textContent = 'Healthy headroom';
+        statusLabel.className = 'font-medium text-[#1B4332]';
+        remainingText.textContent = `${formatCurrency(diff)} remaining`;
+        remainingText.className = 'text-[11px] font-mono text-[#646B66] mt-1.5 tabular-nums';
+      }
+    }
+
+    /**
+     * Renders the stacked horizontal category bar and clickable category legend cards.
+     * @param {Object} stats
+     */
+    function renderCategoryBreakdown(stats) {
+      const barContainer = document.getElementById('categoryStackedBar');
+      const legendContainer = document.getElementById('categoryBreakdownLegend');
+      const clearBtn = document.getElementById('clearCategoryFilterBtn');
+
+      barContainer.innerHTML = '';
+      legendContainer.innerHTML = '';
+
+      // Show or hide "Clear category filter" link conditionally
+      if (appState.categoryFilter !== 'All') {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      const categoryNames = Object.keys(CATEGORY_META);
+
+      // Loop over categories to build proportional bar segments and legend cards
+      categoryNames.forEach((catName) => {
+        const amount = stats.categoryTotals[catName] || 0;
+        const sharePercent = stats.monthlyBurn > 0 ? (amount / stats.monthlyBurn) * 100 : 0;
+        const meta = CATEGORY_META[catName];
+        const isSelected = appState.categoryFilter === catName;
+
+        // 1. Add proportional segment to stacked bar if spend > 0
+        if (sharePercent > 0) {
+          const segment = document.createElement('div');
+          segment.className = 'bar-fill h-full first:rounded-l-full last:rounded-r-full cursor-pointer hover:opacity-85';
+          segment.style.width = `${sharePercent}%`;
+          segment.style.backgroundColor = meta.color;
+          segment.title = `${catName}: ${formatCurrency(amount)}/mo (${Math.round(sharePercent)}%)`;
+          segment.addEventListener('click', () => toggleCategoryFilter(catName));
+          barContainer.appendChild(segment);
+        }
+
+        // 2. Add clickable legend card
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `text-left p-3 rounded-xl border transition flex flex-col justify-between ${
+          isSelected
+            ? 'bg-[#F4F0E8] border-[#1B4332] ring-1 ring-[#1B4332]'
+            : 'bg-[#FBF9F5] border-[#E5E0D8] hover:border-[#CFC8BC]'
+        }`;
+        card.addEventListener('click', () => toggleCategoryFilter(catName));
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="flex items-center gap-1.5 text-xs font-semibold text-[#1F2421]">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${meta.color}"></span>
+              ${catName}
+            </span>
+            <span class="text-[11px] font-mono text-[#646B66]">${Math.round(sharePercent)}%</span>
+          </div>
+          <p class="font-mono text-sm font-semibold text-[#1B4332] mt-1.5 tabular-nums">
+            ${formatCurrency(amount)}<span class="text-[10px] font-normal text-[#646B66]">/mo</span>
+          </p>
+        `;
+
+        legendContainer.appendChild(card);
+      });
+    }
+
+    /**
+     * Renders the filtered and sorted subscription ledger cards.
+     */
+    function renderSubscriptionLedger() {
+      const listContainer = document.getElementById('subscriptionLedgerList');
+      const emptyState = document.getElementById('ledgerEmptyState');
+      const items = getFilteredAndSortedSubscriptions();
+
+      listContainer.innerHTML = '';
+
+      // Conditional check for empty result set
+      if (items.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      // Loop via forEach to construct each interactive subscription ledger card
+      items.forEach((sub) => {
+        const monthlyEq = calculateMonthlyEquivalent(sub);
+        const daysLeft = getDaysUntilRenewal(sub.renewalDate);
+        const isPaused = sub.status === 'Paused';
+        const isUrgent = !isPaused && daysLeft >= 0 && daysLeft <= BUDGET_CONFIG.urgentRenewalDays;
+        const isOverdue = !isPaused && daysLeft < 0;
+        const isHighCost = !isPaused && monthlyEq >= BUDGET_CONFIG.highCostThreshold;
+        const meta = CATEGORY_META[sub.category] || CATEGORY_META.Software;
+
+        // Determine human-readable renewal label via conditionals
+        let renewalLabel = '';
+        if (isPaused) {
+          renewalLabel = 'Billing paused';
+        } else if (isOverdue) {
+          renewalLabel = `Past due (${Math.abs(daysLeft)}d ago)`;
+        } else if (daysLeft === 0) {
+          renewalLabel = 'Renews today';
+        } else if (daysLeft === 1) {
+          renewalLabel = 'Renews tomorrow';
+        } else {
+          renewalLabel = `Renews in ${daysLeft} days (${sub.renewalDate})`;
+        }
+
+        const card = document.createElement('article');
+        card.className = `editorial-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+          isPaused ? 'opacity-70 bg-[#FBF9F5]' : ''
+        } ${isUrgent || isOverdue ? 'border-l-4 border-l-[#BC4749]' : ''}`;
+
+        card.innerHTML = `
+          <!-- Left: Brand Initial, Name, Category & Conditional Badges -->
+          <div class="flex items-start gap-3.5">
+            <div
+              class="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-bold text-base shrink-0 border border-[#E5E0D8]"
+              style="background-color: ${meta.bgTint}; color: ${meta.color};"
+            >
+              ${escapeHTML(sub.name.charAt(0).toUpperCase())}
+            </div>
+
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-semibold text-base text-[#1F2421] ${isPaused ? 'line-through text-[#646B66]' : ''}">
+                  ${escapeHTML(sub.name)}
+                </h3>
+
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#F4F0E8] text-[#52796F] border border-[#E5E0D8]">
+                  ${escapeHTML(sub.category)}
+                </span>
+
+                ${
+                  isUrgent || isOverdue
+                    ? `<span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-[#BC4749]/10 text-[#BC4749] border border-[#BC4749]/30">
+                        ● Renewing Soon
+                      </span>`
+                    : ''
+                }
+
+                ${
+                  isHighCost
+                    ? `<span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/30">
+                        High Spend
+                      </span>`
+                    : ''
+                }
+
+                ${
+                  isPaused
+                    ? `<span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-[#E5E0D8]/60 text-[#646B66]">
+                        Paused
+                      </span>`
+                    : ''
+                }
+              </div>
+
+              <p class="text-xs mt-1 ${isUrgent || isOverdue ? 'text-[#BC4749] font-medium' : 'text-[#646B66]'}">
+                ${renewalLabel}
+              </p>
+            </div>
+          </div>
+
+          <!-- Right: Cost Readout & Action Controls -->
+          <div class="flex items-center justify-between sm:justify-end gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#E5E0D8]">
+            <div class="text-left sm:text-right">
+              <p class="font-mono text-base font-semibold text-[#1B4332] tabular-nums">
+                ${formatCurrency(sub.cost)}
+                <span class="text-xs font-normal text-[#646B66]">/${sub.billingCycle === 'Yearly' ? 'yr' : 'mo'}</span>
+              </p>
+              ${
+                sub.billingCycle === 'Yearly'
+                  ? `<p class="text-[11px] font-mono text-[#646B66] tabular-nums">${formatCurrency(monthlyEq)}/mo eq.</p>`
+                  : `<p class="text-[11px] font-mono text-[#646B66] tabular-nums">${formatCurrency(sub.cost * 12)}/yr</p>`
+              }
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                data-action="toggle-status"
+                data-id="${sub.id}"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-medium border transition ${
+                  isPaused
+                    ? 'bg-[#1B4332] text-[#FBF9F5] border-[#1B4332] hover:bg-[#133124]'
+                    : 'bg-[#F4F0E8] text-[#1F2421] border-[#E5E0D8] hover:bg-[#EAE3D5]'
+                }"
+              >
+                ${isPaused ? 'Resume' : 'Pause'}
+              </button>
+
+              <button
+                type="button"
+                data-action="edit"
+                data-id="${sub.id}"
+                title="Edit subscription"
+                class="p-2 rounded-lg text-[#646B66] hover:text-[#1B4332] hover:bg-[#F4F0E8] border border-transparent hover:border-[#E5E0D8] transition"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                data-action="delete"
+                data-id="${sub.id}"
+                title="Delete subscription"
+                class="p-2 rounded-lg text-[#646B66] hover:text-[#BC4749] hover:bg-[#BC4749]/10 border border-transparent hover:border-[#BC4749]/20 transition"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    /**
+     * Master UI render orchestrator.
+     */
+    function renderApp() {
+      const telemetry = computeTelemetry();
+      renderKPISection(telemetry);
+      renderCategoryBreakdown(telemetry);
+      renderSubscriptionLedger();
+    }
+
+    /* =========================================================================
+       5. EVENT HANDLERS & INITIALIZATION
+       ========================================================================= */
+
+    /**
+     * Toggles a category filter when clicking a bar segment or legend card.
+     * @param {string} categoryName
+     */
+    function toggleCategoryFilter(categoryName) {
+      appState.categoryFilter = appState.categoryFilter === categoryName ? 'All' : categoryName;
+      renderApp();
+    }
+
+    /**
+     * Populates the form with an existing subscription's fields for editing.
+     * @param {string} subId
+     */
+    function startEditingSubscription(subId) {
+      const target = appState.subscriptions.find((s) => s.id === subId);
+      if (!target) return;
+
+      document.getElementById('subIdInput').value = target.id;
+      document.getElementById('subNameInput').value = target.name;
+      document.getElementById('subCostInput').value = target.cost;
+      document.getElementById('subCycleInput').value = target.billingCycle;
+      document.getElementById('subCategoryInput').value = target.category;
+      document.getElementById('subStatusInput').value = target.status;
+      document.getElementById('subRenewalDateInput').value = target.renewalDate;
+
+      document.getElementById('formModeBadge').textContent = 'Editing Entry';
+      document.getElementById('formHeading').textContent = 'Update Subscription';
+      document.getElementById('formSubmitBtn').textContent = 'Update Entry';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('subNameInput').focus();
+    }
+
+    /**
+     * Resets the Add/Edit form back to clean "New Entry" mode.
+     */
+    function resetSubscriptionForm() {
+      document.getElementById('subscriptionForm').reset();
+      document.getElementById('subIdInput').value = '';
+      document.getElementById('subRenewalDateInput').value = getRelativeDateISO(14);
+
+      document.getElementById('formModeBadge').textContent = 'New Entry';
+      document.getElementById('formHeading').textContent = 'Add Subscription';
+      document.getElementById('formSubmitBtn').textContent = 'Save to Ledger';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set current editorial date subtitle
+      const todayLabel = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      document.getElementById('headerDateSubtitle').textContent = `Ledger snapshot for ${todayLabel}`;
+
+      // Load saved state & synchronize budget input
+      loadState();
+      document.getElementById('monthlyBudgetInput').value = appState.monthlyBudget;
+      document.getElementById('subRenewalDateInput').value = getRelativeDateISO(14);
+
+      renderApp();
+
+      // 1. Add / Edit Form Submit
+      document.getElementById('subscriptionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const editingId = document.getElementById('subIdInput').value;
+        const name = document.getElementById('subNameInput').value.trim();
+        const cost = parseFloat(document.getElementById('subCostInput').value);
+        const billingCycle = document.getElementById('subCycleInput').value;
+        const category = document.getElementById('subCategoryInput').value;
+        const status = document.getElementById('subStatusInput').value;
+        const renewalDate = document.getElementById('subRenewalDateInput').value;
+
+        if (!name || Number.isNaN(cost) || cost <= 0 || !renewalDate) return;
+
+        // Conditional branch: Update existing object in array vs Insert new object
+        if (editingId) {
+          appState.subscriptions = appState.subscriptions.map((sub) =>
+            sub.id === editingId
+              ? { ...sub, name, cost, billingCycle, category, status, renewalDate }
+              : sub
+          );
+          showToast(`Updated "${name}"`);
+        } else {
+          const newEntry = {
+            id: `sub-${Date.now()}`,
+            name,
+            cost,
+            billingCycle,
+            category,
+            status,
+            renewalDate
+          };
+          appState.subscriptions.unshift(newEntry);
+          showToast(`Added "${name}" to ledger`);
+        }
+
+        saveState();
+        resetSubscriptionForm();
+        renderApp();
+      });
+
+      // Cancel Edit Button
+      document.getElementById('cancelEditBtn').addEventListener('click', resetSubscriptionForm);
+
+      // Header "+ Log Subscription" quick focus button
+      document.getElementById('openNewSubFocusBtn').addEventListener('click', () => {
+        resetSubscriptionForm();
+        document.getElementById('subNameInput').focus();
+      });
+
+      // 2. Delegated Click Events on Subscription Ledger Cards (Pause/Resume, Edit, Delete)
+      document.getElementById('subscriptionLedgerList').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+
+        if (action === 'toggle-status') {
+          appState.subscriptions = appState.subscriptions.map((sub) => {
+            if (sub.id === id) {
+              const nextStatus = sub.status === 'Active' ? 'Paused' : 'Active';
+              showToast(`${sub.name} is now ${nextStatus}`);
+              return { ...sub, status: nextStatus };
+            }
+            return sub;
+          });
+          saveState();
+          renderApp();
+        } else if (action === 'edit') {
+          startEditingSubscription(id);
+        } else if (action === 'delete') {
+          const target = appState.subscriptions.find((s) => s.id === id);
+          appState.subscriptions = appState.subscriptions.filter((s) => s.id !== id);
+          if (document.getElementById('subIdInput').value === id) {
+            resetSubscriptionForm();
+          }
+          saveState();
+          renderApp();
+          showToast(`Removed "${target ? target.name : 'subscription'}"`);
+        }
+      });
+
+      // 3. Status Filter Tabs
+      document.getElementById('statusFilterGroup').addEventListener('click', (e) => {
+        const tab = e.target.closest('button[data-filter]');
+        if (!tab) return;
+
+        appState.statusFilter = tab.dataset.filter;
+
+        // Loop over status tabs to update active visual state
+        document.querySelectorAll('.status-tab').forEach((btn) => {
+          if (btn.dataset.filter === appState.statusFilter) {
+            btn.className = 'status-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1B4332] text-[#FBF9F5] transition';
+          } else {
+            const isUrgentTab = btn.dataset.filter === 'RenewingSoon';
+            btn.className = `status-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F4F0E8] ${
+              isUrgentTab ? 'text-[#BC4749]' : 'text-[#1F2421]'
+            } hover:bg-[#EAE3D5] transition`;
+          }
+        });
+
+        renderSubscriptionLedger();
+      });
+
+      // 4. Clear Category Filter Link
+      document.getElementById('clearCategoryFilterBtn').addEventListener('click', () => {
+        appState.categoryFilter = 'All';
+        renderApp();
+      });
+
+      // 5. Search & Sort Inputs
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        appState.searchQuery = e.target.value;
+        renderSubscriptionLedger();
+      });
+
+      document.getElementById('sortSelect').addEventListener('change', (e) => {
+        appState.sortBy = e.target.value;
+        renderSubscriptionLedger();
+      });
+
+      // 6. Monthly Budget Cap Input
+      document.getElementById('monthlyBudgetInput').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!Number.isNaN(val) && val >= 10) {
+          appState.monthlyBudget = val;
+          saveState();
+          renderKPISection(computeTelemetry());
+        }
+      });
+
+      // 7. Reset Sample Data Button
+      document.getElementById('resetSampleBtn').addEventListener('click', () => {
+        appState.subscriptions = createDefaultSubscriptions();
+        appState.monthlyBudget = BUDGET_CONFIG.defaultMonthlyLimit;
+        appState.statusFilter = 'All';
+        appState.categoryFilter = 'All';
+        appState.searchQuery = '';
+        appState.sortBy = 'renewalAsc';
+
+        document.getElementById('monthlyBudgetInput').value = appState.monthlyBudget;
+        document.getElementById('searchInput').value = '';
+        document.getElementById('sortSelect').value = 'renewalAsc';
+
+        // Reset tab styling
+        document.querySelectorAll('.status-tab').forEach((btn) => {
+          btn.className =
+            btn.dataset.filter === 'All'
+              ? 'status-tab px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1B4332] text-[#FBF9F5] transition'
+              : `status-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-[#F4F0E8] ${
+                  btn.dataset.filter === 'RenewingSoon' ? 'text-[#BC4749]' : 'text-[#1F2421]'
+                } hover:bg-[#EAE3D5] transition`;
+        });
+
+        resetSubscriptionForm();
+        saveState();
+        renderApp();
+        showToast('Sample ledger data restored');
+      });
+    });
+  </script>
+</body>
+</html>
