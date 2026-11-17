@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreshKeep — Expiry Tracker app</title>
+  <style>
+    /* =========================================
+       1. CSS VARIABLES & RESET (Yellow & White Theme)
+       ========================================= */
+    :root {
+      --bg-cream: #FFFDF5;
+      --surface-white: #FFFFFF;
+      --yellow-primary: #FFC107;
+      --yellow-hover: #FFB300;
+      --yellow-soft: #FFF8E1;
+      --yellow-border: #FFE082;
+      --text-dark: #2C271E;
+      --text-muted: #756E61;
+      
+      /* Status Colors */
+      --status-fresh-bg: #E8F5E9;
+      --status-fresh-text: #2E7D32;
+      --status-soon-bg: #FFF3E0;
+      --status-soon-text: #EF6C00;
+      --status-expired-bg: #FFEBEE;
+      --status-expired-text: #C62828;
+
+      --shadow-sm: 0 2px 8px rgba(44, 39, 30, 0.05);
+      --shadow-md: 0 8px 24px rgba(255, 193, 7, 0.14);
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      line-height: 1.5;
+      padding-bottom: 3rem;
+    }
+
+    /* =========================================
+       2. HEADER & LAYOUT
+       ========================================= */
+    header {
+      background: linear-gradient(135deg, #FFD54F 0%, #FFC107 100%);
+      padding: 2.2rem 1.5rem 3.5rem;
+      text-align: center;
+      color: var(--text-dark);
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: var(--shadow-md);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-top: 0.25rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: -2rem auto 0;
+      padding: 0 1rem;
+    }
+
+    /* =========================================
+       3. SUMMARY STATS BAR
+       ========================================= */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--surface-white);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      border: 1px solid var(--yellow-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .stat-card small {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* =========================================
+       4. FORM SECTION
+       ========================================= */
+    .card {
+      background: var(--surface-white);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      border: 1px solid var(--yellow-border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr 1.2fr auto;
+      gap: 0.85rem;
+      align-items: end;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid #ECE6D8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--yellow-primary);
+      background-color: var(--surface-white);
+      box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+    }
+
+    .btn-primary {
+      background-color: var(--yellow-primary);
+      color: var(--text-dark);
+      font-weight: 700;
+      border: none;
+      padding: 0.75rem 1.4rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--yellow-hover);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    /* =========================================
+       5. FILTERS & CONTROLS
+       ========================================= */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: var(--surface-white);
+      border: 1px solid var(--yellow-border);
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill.active, .pill:hover {
+      background: var(--yellow-primary);
+      color: var(--text-dark);
+      border-color: var(--yellow-primary);
+    }
+
+    .search-box {
+      width: 240px;
+      background: var(--surface-white);
+    }
+
+    /* =========================================
+       6. ITEMS LIST GRID
+       ========================================= */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .item-card {
+      background: var(--surface-white);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      border: 1px solid #F0EAD6;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .item-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Top Accent Strip based on Status */
+    .item-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+    }
+
+    .item-card.fresh::before { background-color: #4CAF50; }
+    .item-card.soon::before { background-color: var(--yellow-primary); }
+    .item-card.expired::before { background-color: #E53935; }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .item-category {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--yellow-soft);
+      color: #8D6E00;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 0.35rem;
+    }
+
+    .item-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: #B0A899;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .btn-delete:hover {
+      color: #C62828;
+      background: #FFEBEE;
+    }
+
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed #EFECE4;
+      font-size: 0.85rem;
+    }
+
+    .expiry-date {
+      color: var(--text-muted);
+    }
+
+    .badge {
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    .badge.fresh {
+      background: var(--status-fresh-bg);
+      color: var(--status-fresh-text);
+    }
+
+    .badge.soon {
+      background: var(--status-soon-bg);
+      color: var(--status-soon-text);
+    }
+
+    .badge.expired {
+      background: var(--status-expired-bg);
+      color: var(--status-expired-text);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+      background: var(--surface-white);
+      border-radius: var(--radius-lg);
+      border: 1px dashed var(--yellow-border);
+      color: var(--text-muted);
+    }
+
+    /* =========================================
+       7. RESPONSIVE MEDIA QUERIES
+       ========================================= */
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .form-grid .form-group:first-child {
+        grid-column: 1 / -1;
+      }
+      .btn-primary {
+        grid-column: 1 / -1;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .search-box {
+        width: 100%;
+      }
+      header h1 {
+        font-size: 1.65rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>🍋 FreshKeep</h1>
+    <p>Track groceries, medicines, and essentials before they expire</p>
+  </header>
+
+  <main class="container">
+    <!-- Summary Statistics -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span id="stat-total">0</span>
+        <small>Total Items</small>
+      </div>
+      <div class="stat-card">
+        <span id="stat-fresh" style="color: #2E7D32;">0</span>
+        <small>Fresh</small>
+      </div>
+      <div class="stat-card">
+        <span id="stat-soon" style="color: #EF6C00;">0</span>
+        <small>Expiring Soon</small>
+      </div>
+      <div class="stat-card">
+        <span id="stat-expired" style="color: #C62828;">0</span>
+        <small>Expired</small>
+      </div>
+    </section>
+
+    <!-- Add Item Form -->
+    <section class="card">
+      <h2 class="card-title">➕ Add New Item</h2>
+      <form id="expiry-form" class="form-grid">
+        <div class="form-group">
+          <label for="item-name">Item Name</label>
+          <input type="text" id="item-name" placeholder="e.g., Almond Milk, Vitamin C..." required />
+        </div>
+
+        <div class="form-group">
+          <label for="item-category">Category</label>
+          <select id="item-category" required>
+            <!-- Options populated dynamically via JS Array -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="item-date">Expiry Date</label>
+          <input type="date" id="item-date" required />
+        </div>
+
+        <button type="submit" class="btn-primary">Add Item</button>
+      </form>
+    </section>
+
+    <!-- Filter & Search Controls -->
+    <section class="controls-bar">
+      <div class="filter-pills" id="filter-pills">
+        <button class="pill active" data-filter="all">All</button>
+        <button class="pill" data-filter="fresh">Fresh</button>
+        <button class="pill" data-filter="soon">Expiring Soon</button>
+        <button class="pill" data-filter="expired">Expired</button>
+      </div>
+
+      <input 
+        type="text" 
+        id="search-input" 
+        class="search-box" 
+        placeholder="🔍 Search items or categories..." 
+      />
+    </section>
+
+    <!-- Items Display Grid -->
+    <section class="items-grid" id="items-grid"></section>
+  </main>
+
+  <script>
+    /* =========================================
+       1. DATA & CONFIGURATION ARRAYS
+       ========================================= */
+    const CATEGORIES = [
+      "🥛 Dairy & Eggs",
+      "🥦 Fruits & Veggies",
+      "🥫 Pantry & Canned",
+      "💊 Medicine & Health",
+      "🧴 Skincare & Cosmetics",
+      "🥩 Meat & Seafood",
+      "📦 Other"
+    ];
+
+    // Default sample data if localStorage is empty
+    const DEFAULT_ITEMS = [
+      { id: 1, name: "Organic Greek Yogurt", category: "🥛 Dairy & Eggs", expiryDate: getRelativeDate(2) },
+      { id: 2, name: "Vitamin D3 Supplements", category: "💊 Medicine & Health", expiryDate: getRelativeDate(45) },
+      { id: 3, name: "Fresh Spinach", category: "🥦 Fruits & Veggies", expiryDate: getRelativeDate(-1) },
+      { id: 4, name: "Sunscreen SPF 50", category: "🧴 Skincare & Cosmetics", expiryDate: getRelativeDate(18) }
+    ];
+
+    let items = JSON.parse(localStorage.getItem("freshkeep_items")) || DEFAULT_ITEMS;
+    let currentFilter = "all";
+    let searchQuery = "";
+
+    /* =========================================
+       2. DOM ELEMENT REFERENCES
+       ========================================= */
+    const form = document.getElementById("expiry-form");
+    const nameInput = document.getElementById("item-name");
+    const categorySelect = document.getElementById("item-category");
+    const dateInput = document.getElementById("item-date");
+    const itemsGrid = document.getElementById("items-grid");
+    const filterPills = document.getElementById("filter-pills");
+    const searchInput = document.getElementById("search-input");
+
+    /* =========================================
+       3. HELPER & CALCULATION FUNCTIONS
+       ========================================= */
+    // Generates YYYY-MM-DD relative to today for sample items
+    function getRelativeDate(daysOffset) {
+      const date = new Date();
+      date.setDate(date.getDate() + daysOffset);
+      return date.toISOString().split("T")[0];
+    }
+
+    // Calculates exact days remaining between today and expiryDate
+    function getDaysRemaining(expiryDateStr) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expiry = new Date(expiryDateStr + "T00:00:00");
+      const diffTime = expiry - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Determines status metadata based on days remaining
+    function getItemStatus(days) {
+      if (days < 0) {
+        return {
+          key: "expired",
+          label: `Expired ${Math.abs(days)}d ago`
+        };
+      }
+      if (days === 0) {
+        return {
+          key: "soon",
+          label: "Expires Today!"
+        };
+      }
+      if (days <= 5) {
+        return {
+          key: "soon",
+          label: `${days} day${days > 1 ? "s" : ""} left`
+        };
+      }
+      return {
+        key: "fresh",
+        label: `${days} days left`
+      };
+    }
+
+    // Formats YYYY-MM-DD into readable text (e.g., Nov 24, 2026)
+    function formatDate(dateStr) {
+      const options = { month: "short", day: "numeric", year: "numeric" };
+      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", options);
+    }
+
+    function saveToStorage() {
+      localStorage.setItem("freshkeep_items", JSON.stringify(items));
+    }
+
+    /* =========================================
+       4. UI RENDERING FUNCTIONS
+       ========================================= */
+    // Populates <select> options from CATEGORIES array
+    function populateCategoryOptions() {
+      categorySelect.innerHTML = CATEGORIES.map(
+        (cat) => `<option value="${cat}">${cat}</option>`
+      ).join("");
+    }
+
+    // Updates top summary counter cards
+    function updateStats() {
+      let fresh = 0, soon = 0, expired = 0;
+
+      items.forEach((item) => {
+        const statusKey = getItemStatus(getDaysRemaining(item.expiryDate)).key;
+        if (statusKey === "fresh") fresh++;
+        else if (statusKey === "soon") soon++;
+        else expired++;
+      });
+
+      document.getElementById("stat-total").textContent = items.length;
+      document.getElementById("stat-fresh").textContent = fresh;
+      document.getElementById("stat-soon").textContent = soon;
+      document.getElementById("stat-expired").textContent = expired;
+    }
+
+    // Renders filtered and sorted items into the DOM
+    function renderItems() {
+      // 1. Sort items by earliest expiry date first
+      const sortedItems = [...items].sort(
+        (a, b) => new Date(a.expiryDate) - new Date(b.expiryDate)
+      );
+
+      // 2. Apply status filter & search query
+      const filteredItems = sortedItems.filter((item) => {
+        const statusKey = getItemStatus(getDaysRemaining(item.expiryDate)).key;
+        const matchesFilter = currentFilter === "all" || statusKey === currentFilter;
+        const matchesSearch =
+          item.name.toLowerCase().includes(searchQuery) ||
+          item.category.toLowerCase().includes(searchQuery);
+        return matchesFilter && matchesSearch;
+      });
+
+      // 3. Handle empty state
+      if (filteredItems.length === 0) {
+        itemsGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>No items found 🍋</h3>
+            <p>Add a new item above or adjust your active filters.</p>
+          </div>
+        `;
+        updateStats();
+        return;
+      }
+
+      // 4. Generate HTML cards
+      itemsGrid.innerHTML = filteredItems
+        .map((item) => {
+          const days = getDaysRemaining(item.expiryDate);
+          const status = getItemStatus(days);
+
+          return `
+            <article class="item-card ${status.key}">
+              <div class="item-header">
+                <div>
+                  <span class="item-category">${item.category}</span>
+                  <h3 class="item-name">${escapeHTML(item.name)}</h3>
+                </div>
+                <button 
+                  class="btn-delete" 
+                  onclick="deleteItem(${item.id})" 
+                  title="Delete item"
+                  aria-label="Delete ${escapeHTML(item.name)}"
+                >✕</button>
+              </div>
+              <div class="item-footer">
+                <span class="expiry-date">Exp: <strong>${formatDate(item.expiryDate)}</strong></span>
+                <span class="badge ${status.key}">${status.label}</span>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
+      updateStats();
+    }
+
+    // Prevent XSS when rendering user-typed names
+    function escapeHTML(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    /* =========================================
+       5. CRUD & EVENT HANDLERS
+       ========================================= */
+    function addItem(e) {
+      e.preventDefault();
+
+      const newItem = {
+        id: Date.now(),
+        name: nameInput.value.trim(),
+        category: categorySelect.value,
+        expiryDate: dateInput.value
+      };
+
+      if (!newItem.name || !newItem.expiryDate) return;
+
+      items.push(newItem);
+      saveToStorage();
+      renderItems();
+      form.reset();
+    }
+
+    function deleteItem(id) {
+      items = items.filter((item) => item.id !== id);
+      saveToStorage();
+      renderItems();
+    }
+
+    // Filter pill click handler
+    filterPills.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("pill")) return;
+
+      document.querySelectorAll(".pill").forEach((btn) => btn.classList.remove("active"));
+      e.target.classList.add("active");
+      currentFilter = e.target.dataset.filter;
+      renderItems();
+    });
+
+    // Live search handler
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      renderItems();
+    });
+
+    form.addEventListener("submit", addItem);
+
+    /* =========================================
+       6. INITIALIZE APPLICATION
+       ========================================= */
+    function init() {
+      populateCategoryOptions();
+      renderItems();
+    }
+
+    init();
+  </script>
+</body>
+</html>
